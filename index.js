@@ -3,8 +3,14 @@ const app = express();
 const port = 8000;
 const expresslayouts = require('express-ejs-layouts');
 
+//we need to tell in which folder the app lookout for the static files
+app.use(express.static('./assets'));
+
 //use layouts
 app.use(expresslayouts);
+//extract style and script from sub pages into the layouts
+app.set('layout extractStyles', true);
+app.set('layout extractScripts', true);
 
 //use express router
 app.use('/', require('./routes/index'));
