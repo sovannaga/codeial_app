@@ -1,4 +1,4 @@
-const User = require('../medels/user');
+const User = require('../models/user');
 
 module.exports.profile = function(req, res){
     return res.render('user_profile', {
@@ -8,6 +8,10 @@ module.exports.profile = function(req, res){
 
 //render the sign up page
 module.exports.signUp = function(req, res){
+    if(req.isAuthenticated()){
+        return res.redirect('/users/profile');
+    }
+
     return res.render('user_sign_up', {
         title: "codeial | Sign Up"
     })
@@ -15,9 +19,14 @@ module.exports.signUp = function(req, res){
 
 //render the sign in apge
 module.exports.signIn = function(req, res){
+    if(req.isAuthenticated()){
+        return res.redirect('/users/profile');
+    }
+
     return res.render('user_sign_in', {
         title: "codeial | Sign In"
     })
+
 }
 
 //get the sign up data
@@ -43,5 +52,17 @@ module.exports.create = async function(req, res) {
 
 //sign in and create a session for the user 
 module.exports.createSession = async function(req, res){  
-    //To do later
+    return res.redirect('/');
 }
+
+//sign out an ddestroy the session
+module.exports.destroySession = function(req, res) {
+    req.logout(function(err) {
+      if (err) {
+        console.error(err);
+      }
+      res.redirect('/');
+    });
+}
+  
+  
