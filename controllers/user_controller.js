@@ -17,7 +17,7 @@ module.exports.signUp = function(req, res){
     })
 }
 
-//render the sign in apge
+//render the sign in page
 module.exports.signIn = function(req, res){
     if(req.isAuthenticated()){
         return res.redirect('/users/profile');
