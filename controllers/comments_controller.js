@@ -32,8 +32,8 @@ module.exports.create = async function(req, res) {
       if (!comment) {
         return res.redirect('back'); // Comment not found
       }
-  
-      if (comment.user.toString() ===  req.user.id.toString()) {
+      //when you are comparing it must be String and .id means converting the object id into string
+      if (comment.user ==  req.user.id) {
         const postId = comment.post;
         console.log(comment);
         await comment.deleteOne();
