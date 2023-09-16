@@ -1,4 +1,5 @@
 const Post = require('../models/post');
+const Comment = require('../models/comment');
 
 module.exports.create = async function (req, res) {
     try {
@@ -14,3 +15,27 @@ module.exports.create = async function (req, res) {
         return res.status(500).send('Internal Server Error');
     }
 };
+
+
+module.exports.destroy = async function (req, res) {
+    try {
+      const post = await Post.findById(req.params.id);
+  
+      if (!post) {
+        return res.redirect('back'); // Post not found
+      }
+  
+      if (post.user.toString() == req.user.id.toString()) {
+        await post.remove();
+        await Comment.deleteMany({ post: req.params.id });
+      } else {
+        return res.redirect('back'); // User doesn't have permission
+      }
+  
+      return res.redirect('back'); // Successfully deleted, or user didn't have permission
+    } catch (err) {
+      console.error(err);
+      return res.redirect('back'); // Handle errors gracefully
+    }
+  };
+  
