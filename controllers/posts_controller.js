@@ -24,9 +24,10 @@ module.exports.destroy = async function (req, res) {
       if (!post) {
         return res.redirect('back'); // Post not found
       }
-  
+      //when you are comparing it must be String
       if (post.user.toString() == req.user.id.toString()) {
-        await post.remove();
+        console.log(post);
+        await post.deleteOne();
         await Comment.deleteMany({ post: req.params.id });
       } else {
         return res.redirect('back'); // User doesn't have permission
