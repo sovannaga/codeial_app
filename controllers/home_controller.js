@@ -17,7 +17,15 @@ module.exports.home = async function (req, res) {
 
     //populate the user of each post
     try {
-        const posts = await Post.find({}).populate('user').exec();
+        const posts = await Post.find({})
+        .populate('user')
+        .populate({
+            path: 'comments',
+            populate: {
+                path:'user'
+            }
+        })
+        .exec();
         res.render('home', {
             title: "Codeial | Home",
             posts: posts
