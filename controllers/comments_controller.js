@@ -23,3 +23,30 @@ module.exports.create = async function(req, res) {
       res.status(500).send('Internal Server Error');
     }
   }
+
+
+  module.exports.destroy = async function (req, res) {
+    try {
+      const comment = await Comment.findById(req.params.id);
+  
+      if (!comment) {
+        return res.redirect('back'); // Comment not found
+      }
+  
+      if (comment.user.toString() ===  req.user.id.toString()) {
+        const postId = comment.post;
+        console.log(comment);
+        await comment.deleteOne();
+  
+        const post = await Post.findByIdAndUpdate(postId, { $pull: { comments: req.params.id } });
+  
+        return res.redirect('back');
+      } else {
+        return res.redirect('back'); // User doesn't have permission
+      }
+    } catch (err) {
+      console.error(err);
+      return res.redirect('back'); // Handle errors gracefully
+    }
+  };
+  

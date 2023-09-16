@@ -25,8 +25,7 @@ module.exports.destroy = async function (req, res) {
         return res.redirect('back'); // Post not found
       }
       //when you are comparing it must be String
-      if (post.user.toString() == req.user.id.toString()) {
-        console.log(post);
+      if (post.user.toString() === req.user.id.toString()) {
         await post.deleteOne();
         await Comment.deleteMany({ post: req.params.id });
       } else {
