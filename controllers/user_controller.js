@@ -1,10 +1,35 @@
 const User = require('../models/user');
 
-module.exports.profile = function(req, res){
-    return res.render('user_profile', {
-        title: "User_Profile"
-    });
+module.exports.profile = async function(req, res){
+    try {
+        const user = await User.findById(req.params.id);
+        return res.render('user_profile', {
+            title: "User_Profile",
+            profile_user: user
+        });
+    } catch (err) {
+        // Handle any errors here
+        console.error(err);
+        // Send an error response
+        res.status(500).send('Internal Server Error');
+    }
 }
+
+module.exports.update = async function (req, res) {
+    try {
+        if (req.user.id == req.params.id) {
+            const user = await User.findByIdAndUpdate(req.params.id, { name: req.body.name, email: req.body.email });
+            return res.redirect('back');
+        } else {
+            return res.status(401).send('Unauthorized');
+        }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send('Internal Server Error');
+    }
+}
+
+
 
 //render the sign up page
 module.exports.signUp = function(req, res){
@@ -51,17 +76,20 @@ module.exports.create = async function(req, res) {
 }
 
 //sign in and create a session for the user 
-module.exports.createSession = async function(req, res){  
+module.exports.createSession = async function(req, res){
+    req.flash('success', 'Logged in Successfully');  
     return res.redirect('/');
 }
 
-//sign out an ddestroy the session
+//sign out an destroy the session
 module.exports.destroySession = function(req, res) {
     req.logout(function(err) {
       if (err) {
         console.error(err);
       }
-      res.redirect('/');
+
+    req.flash('success', 'You Have Logged Out Successfully');
+    res.redirect('/');
     });
 }
   

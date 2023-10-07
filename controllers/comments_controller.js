@@ -16,6 +16,7 @@ module.exports.create = async function(req, res) {
           post.comments.push(comment);
           await post.save();
     
+          req.flash('success', 'comment Published!')
           res.redirect('/');
         }
     } catch (err) {
@@ -40,12 +41,13 @@ module.exports.create = async function(req, res) {
   
         const post = await Post.findByIdAndUpdate(postId, { $pull: { comments: req.params.id } });
   
+        req.flash('success', 'comments Deleted!');
         return res.redirect('back');
       } else {
         return res.redirect('back'); // User doesn't have permission
       }
     } catch (err) {
-      console.error(err);
+      req.flash('error', err);
       return res.redirect('back'); // Handle errors gracefully
     }
   };

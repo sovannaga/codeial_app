@@ -1,4 +1,5 @@
 const Post = require('../models/post');
+const User = require('../models/user');
 
 module.exports.home = async function (req, res) {
     // try {
@@ -18,6 +19,7 @@ module.exports.home = async function (req, res) {
     //populate the user of each post
     try {
         const posts = await Post.find({})
+        .sort('-createdAt')
         .populate('user')
         .populate({
             path: 'comments',
@@ -26,9 +28,13 @@ module.exports.home = async function (req, res) {
             }
         })
         .exec();
+
+        //Retrieve all users
+        const users = await User.find({}).exec()
         res.render('home', {
             title: "Codeial | Home",
-            posts: posts
+            posts: posts,
+            all_users: users
         });
     } catch (err) {
         // Handle any errors here

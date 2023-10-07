@@ -1,0 +1,32 @@
+// #home-container{
+//     display: flex;
+//     // height: 100%;
+//     border: 3px solid black;
+    
+//     #feed-posts{
+//         width: 70%;
+//         padding: 10px;
+//     }
+
+//     #user-friends{
+//         width: 30%;
+//         padding: 10px;
+//         border-left: 3px solid lightgrey;
+//     }
+// }
+
+#home-container{
+    display: flex;
+    
+    #feed-posts{
+        width: 70%;
+        padding: 10px;
+    }
+
+    #user-friends{
+        width: 30%;
+        padding: 10px;
+        border-left: 1px solid lightgrey;
+        height: 100%;
+    }
+}
