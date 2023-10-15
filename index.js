@@ -29,6 +29,9 @@ app.use(cookieParser());
 //we need to tell in which folder the app lookout for the static files
 app.use(express.static('./assets'));
 
+//make the uploads path available to the browser
+app.use('/uploads', express.static(__dirname + '/uploads'));
+
 //use layouts
 app.use(expressLayouts);
 //extract style and script from sub pages into the layouts

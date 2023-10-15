@@ -1,96 +1,150 @@
 const User = require('../models/user');
+const path = require('path');
+const fs = require('fs');
 
-module.exports.profile = async function(req, res){
+// let's keep it same as before
+
+module.exports.profile = async function(req, res) {
     try {
-        const user = await User.findById(req.params.id);
-        return res.render('user_profile', {
-            title: "User_Profile",
-            profile_user: user
-        });
+      const user = await User.findById(req.params.id);
+      res.render('user_profile', {
+        title: 'User Profile',
+        profile_user: user
+      });
     } catch (err) {
-        // Handle any errors here
-        console.error(err);
-        // Send an error response
-        res.status(500).send('Internal Server Error');
+      // Handle errors here, for example, you can send an error response or render an error page.
+      console.error(err);
+      // Handle the error accordingly, for example:
+      req.flash('error', 'User not found');
+      return res.redirect('back');
+    }
+  };    
+
+
+module.exports.update = async function(req, res){
+    // if(req.user.id == req.params.id){
+    //     User.findByIdAndUpdate(req.params.id, req.body, function(err, user){
+    //         req.flash('success', 'Updated!');
+    //         return res.redirect('back');
+    //     });
+    // }else{
+    //     req.flash('error', 'Unauthorized!');
+    //     return res.status(401).send('Unauthorized');
+    // }
+    if(req.user.id == req.params.id){
+      try{
+        let user = await User.findById(req.params.id);
+        User.uploadedAvatar(req, res, function(err){
+          if(err){console.log('***Multer Error: ', err)}
+
+          user.name = req.body.name;
+          user.email = req.body.email;
+
+          if (req.file) {
+
+            if (user.avatar) {
+             const avatarPath = (path.join(__dirname, '..', user.avatar));
+              //  jab avatar already exists
+              if (fs.existsSync(avatarPath)) {
+                fs.unlinkSync(avatarPath);
+              }
+            }
+
+            //This is saving the path of the uploaded file into the avatar field in the user
+            user.avatar = User.avatarPath + '/' + req.file.filename;
+         }
+         user.save();
+         return res.redirect('back');
+        })
+
+      }catch(err){
+        req.flash('error', err);
+        return res.redirect('back');
+      }
+    }else{
+      req.flash('error', 'Unauthorized!');
+      return res.status(401).send('Unauthorized');
     }
 }
 
-module.exports.update = async function (req, res) {
-    try {
-        if (req.user.id == req.params.id) {
-            const user = await User.findByIdAndUpdate(req.params.id, { name: req.body.name, email: req.body.email });
-            return res.redirect('back');
-        } else {
-            return res.status(401).send('Unauthorized');
-        }
-    } catch (err) {
-        console.error(err);
-        return res.status(500).send('Internal Server Error');
-    }
-}
+
+// render the sign up page
+module.exports.signUp = async function (req, res) {
+  if (req.isAuthenticated()) {
+    return res.redirect('/users/profile');
+  }
+
+  try {
+    res.render('user_sign_up', {
+      title: "Codeial | Sign Up"
+    });
+  } catch (err) {
+    // Handle errors here, for example, you can send an error response or render an error page.
+    console.error(err);
+    // Handle the error accordingly, for example:
+    req.flash('error', 'An error occurred while rendering the sign-up page');
+    return res.redirect('back');
+  }
+};
 
 
 
-//render the sign up page
-module.exports.signUp = function(req, res){
-    if(req.isAuthenticated()){
-        return res.redirect('/users/profile');
-    }
+// render the sign in page
+module.exports.signIn = async function (req, res) {
+  if (req.isAuthenticated()) {
+    return res.redirect('/users/profile');
+  }
 
-    return res.render('user_sign_up', {
-        title: "codeial | Sign Up"
-    })
-}
+  try {
+    res.render('user_sign_in', {
+      title: "Codeial | Sign In"
+    });
+  } catch (err) {
+    // Handle errors here, for example, you can send an error response or render an error page.
+    console.error(err);
+    // Handle the error accordingly, for example:
+    req.flash('error', 'An error occurred while rendering the sign-in page');
+    return res.redirect('back');
+  }
+};
 
-//render the sign in page
-module.exports.signIn = function(req, res){
-    if(req.isAuthenticated()){
-        return res.redirect('/users/profile');
-    }
 
-    return res.render('user_sign_in', {
-        title: "codeial | Sign In"
-    })
-
-}
-
-//get the sign up data
+// get the sign up data
 module.exports.create = async function(req, res) {
     try {
-        if (req.body.password !== req.body.confirm_password) {
-            return res.redirect('back');
-        }
-
-        const user = await User.findOne({ email: req.body.email });
-
-        if (!user) {
-            const newUser = await User.create(req.body);
-            return res.redirect('/users/sign-in');
-        } else {
-            return res.redirect('back');
-        }
+      if (req.body.password !== req.body.confirm_password) {
+        req.flash('error', 'Passwords do not match');
+        return res.redirect('back');
+      }
+  
+      const existingUser = await User.findOne({ email: req.body.email });
+      if (!existingUser) {
+        const user = await User.create(req.body);
+        req.flash('success', 'You have signed up, login to continue!');
+        return res.redirect('/users/sign-in');
+      } else {
+        req.flash('success', 'You have signed up, login to continue!');
+        return res.redirect('back');
+      }
     } catch (err) {
-        console.error('Error in finding user in signing up:', err);
-        return res.status(500).send('Internal Server Error'); // You may want to handle errors differently
+      req.flash('error', err);
+      return res.redirect('back');
     }
-}
+  };
 
-//sign in and create a session for the user 
-module.exports.createSession = async function(req, res){
-    req.flash('success', 'Logged in Successfully');  
+
+// sign in and create a session for the user
+module.exports.createSession = function(req, res){
+    req.flash('success', 'Logged in Successfully');
     return res.redirect('/');
 }
 
-//sign out an destroy the session
-module.exports.destroySession = function(req, res) {
-    req.logout(function(err) {
-      if (err) {
-        console.error(err);
-      }
-
-    req.flash('success', 'You Have Logged Out Successfully');
-    res.redirect('/');
-    });
+module.exports.destroySession = function (req, res) {
+  req.logout(function (err) {
+     if (err) {
+        console.error('errors while logout', err);
+     }
+     req.flash('success', 'You have Logged out');
+     return res.redirect('/');
+  });
 }
-  
-  
