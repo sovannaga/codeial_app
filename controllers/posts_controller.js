@@ -59,5 +59,5 @@ module.exports.destroy = async function (req, res) {
       req.flash('error', err);
       return res.redirect('back');
     }
-  };
+  }
   
